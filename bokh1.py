@@ -4,6 +4,8 @@ from bokeh.plotting import figure
 from bokeh.tile_providers import CARTODBPOSITRON
 from bokeh.io import show
 from bokeh.models import ColumnDataSource
+import bokeh
+import pandas_bokeh
 from bokeh.layouts import column
 import numpy as np
 from bokeh.palettes import Viridis256
