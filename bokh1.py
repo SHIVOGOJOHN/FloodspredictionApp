@@ -1,19 +1,26 @@
 import streamlit as st
 import pandas as pd
-from bokeh.plotting import figure
-from bokeh.tile_providers import CARTODBPOSITRON
-from bokeh.io import show
-from bokeh.models import ColumnDataSource
-import bokeh
 import pandas_bokeh
-from bokeh.layouts import column
-import numpy as np
-from bokeh.palettes import Viridis256
+import warnings
+
+from bokeh.plotting import figure
+from bokeh.tile_providers import get_provider, Vendors
+
+# Create a figure with mercator projection
+p = figure(x_range=(-2000000, 6000000), y_range=(-1000000, 7000000),
+           x_axis_type="mercator", y_axis_type="mercator")
+
+# Add the CARTODBPOSITRON tile
+tile_provider = get_provider(Vendors.CARTODBPOSITRON)
+p.add_tile(tile_provider)
+
+# Set Bokeh output to display within Streamlit
+pandas_bokeh.output_notebook()
 
 # Load the flood data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("floods.csv")  # Ensure this path is correct or use an uploader
+    df = pd.read_csv("floods.csv")
     return df
 
 df = load_data()
@@ -36,40 +43,32 @@ st.markdown("This dashboard helps in visualizing and predicting flood probabilit
 
 # Flood Probability Distribution
 st.subheader("Flood Probability Distribution")
-hist, edges = np.histogram(filtered_df['FloodProbability'], bins=10)
-p_hist = figure(title="Flood Probability Distribution", x_axis_label="Flood Probability", y_axis_label="Frequency")
-p_hist.quad(top=hist, bottom=0, left=edges[:-1], right=edges[1:], fill_color="navy", line_color="white", alpha=0.5)
-st.bokeh_chart(p_hist, use_container_width=True)
+probability_chart = filtered_df['FloodProbability'].plot_bokeh(kind='hist', bins=10, title="Flood Probability Distribution", xlabel="Flood Probability", ylabel="Frequency")
+st.bokeh_chart(probability_chart, use_container_width=True)
 
 # Factors affecting Flood Probability
 st.subheader("Factors Affecting Flood Probability")
 
 # Monsoon Intensity vs Flood Probability
 st.markdown("### Monsoon Intensity vs Flood Probability")
-p_monsoon = figure(title="Monsoon Intensity vs Flood Probability", x_axis_label="Monsoon Intensity", y_axis_label="Flood Probability")
-p_monsoon.scatter(filtered_df['MonsoonIntensity'], filtered_df['FloodProbability'], size=8, color="green", alpha=0.5)
-st.bokeh_chart(p_monsoon, use_container_width=True)
+monsoon_chart = filtered_df.plot_bokeh(x='MonsoonIntensity', y='FloodProbability', kind='scatter', title="Monsoon Intensity vs Flood Probability", xlabel="Monsoon Intensity", ylabel="Flood Probability")
+st.bokeh_chart(monsoon_chart, use_container_width=True)
 
 # Urbanization vs Flood Probability
 st.markdown("### Urbanization vs Flood Probability")
-p_urbanization = figure(title="Urbanization vs Flood Probability", x_axis_label="Urbanization", y_axis_label="Flood Probability")
-p_urbanization.scatter(filtered_df['Urbanization'], filtered_df['FloodProbability'], size=8, color="blue", alpha=0.5)
-st.bokeh_chart(p_urbanization, use_container_width=True)
+urbanization_chart = filtered_df.plot_bokeh(x='Urbanization', y='FloodProbability', kind='scatter', title="Urbanization vs Flood Probability", xlabel="Urbanization", ylabel="Flood Probability")
+st.bokeh_chart(urbanization_chart, use_container_width=True)
 
 # Population Score vs Flood Probability
 st.markdown("### Population Score vs Flood Probability")
-p_population = figure(title="Population Score vs Flood Probability", x_axis_label="Population Score", y_axis_label="Flood Probability")
-p_population.scatter(filtered_df['PopulationScore'], filtered_df['FloodProbability'], size=8, color="red", alpha=0.5)
-st.bokeh_chart(p_population, use_container_width=True)
+population_chart = filtered_df.plot_bokeh(x='PopulationScore', y='FloodProbability', kind='scatter', title="Population Score vs Flood Probability", xlabel="Population Score", ylabel="Flood Probability")
+st.bokeh_chart(population_chart, use_container_width=True)
 
 # Top Contributors to Flood Probability
 st.subheader("Top Contributors to Flood Probability")
 top_contributors = filtered_df.corr()['FloodProbability'].sort_values(ascending=False).head(10)
-top_contributors_df = top_contributors.reset_index()
-top_contributors_df.columns = ['Factor', 'Correlation']
-p_contributors = figure(y_range=top_contributors_df['Factor'].tolist(), height=300, title="Top 10 Contributors to Flood Probability", x_axis_label="Correlation", y_axis_label="Factors")
-p_contributors.hbar(y=top_contributors_df['Factor'], right=top_contributors_df['Correlation'], height=0.4, color=Viridis256[10])
-st.bokeh_chart(p_contributors, use_container_width=True)
+top_contributors_chart = top_contributors.plot_bokeh(kind='barh', title="Top 10 Contributors to Flood Probability", xlabel="Correlation", ylabel="Factors")
+st.bokeh_chart(top_contributors_chart, use_container_width=True)
 
 # Summary Statistics
 st.subheader("Summary Statistics")
@@ -96,6 +95,6 @@ st.markdown("""
     }
     </style>
     <div class="footer">
-    <p>Developed with ❤️ by [JOHN.S]</p>
+    <p>Developed with ❤️ by [Your Name]</p>
     </div>
 """, unsafe_allow_html=True)
