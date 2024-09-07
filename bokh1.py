@@ -11,7 +11,7 @@ from bokeh.palettes import Viridis256
 # Load the flood data
 @st.cache_data
 def load_data():
-    df = pd.read_csv(r"C:\Users\A\.vscode\extensions\floods.csv")  # Ensure this path is correct or use an uploader
+    df = pd.read_csv("floods.csv")  # Ensure this path is correct or use an uploader
     return df
 
 df = load_data()
