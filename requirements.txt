@@ -3,4 +3,5 @@ pandas
 numpy
 pandas_bokeh
 bokeh
-bokeh.tile_providers
+warnings
+
