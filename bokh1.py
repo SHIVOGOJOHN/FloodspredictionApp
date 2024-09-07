@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from bokeh.plotting import figure
-from bokeh.tile_providers import CARTODBPOSITRON
 from bokeh.io import show
 from bokeh.models import ColumnDataSource
 from bokeh.layouts import column
